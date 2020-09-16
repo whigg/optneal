@@ -17,9 +17,9 @@ def main():
 
     lam = 5.0
     qubo_mat = cost_mat + lam * cstr_mat
-    bqm = gq.mat_to_dimod_bqm(qubo_mat, offset)
+    bqm = gq.mat_to_dimod_bqm(Q_mat=qubo_mat, offset=offset)
     print(bqm)
-    
+
     solver = dimod.ExactSolver()
     results = solver.sample(bqm)
 
