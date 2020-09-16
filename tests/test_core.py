@@ -1,6 +1,7 @@
 import unittest
 
 import dimod
+import numpy as np
 import genqubo as gq
 
 
@@ -37,14 +38,25 @@ class TestCore(unittest.TestCase):
     def test_convert_to_penalty(self):
         A = [[1, 1, 0, 0], [0, 0, 1, 1]]
         b = [1, 1]
-        qubo_mat, offset = gq.convert_to_penalty(A, b)
+        qubo_mat, offset = gq.convert_to_penalty(A, b, var_type=gq.BINARY)
         
         corr_qubo_mat = [[-1,  1,  0,  0],
-                        [ 1, -1,  0,  0],
-                        [ 0,  0, -1,  1],
-                        [ 0,  0,  1, -1]]
+                         [ 1, -1,  0,  0],
+                         [ 0,  0, -1,  1],
+                         [ 0,  0,  1, -1]]
         corr_offset = 2.0
         self.assertListEqual(qubo_mat.tolist(), corr_qubo_mat)
+        self.assertEqual(offset, corr_offset)
+        
+        h_mat, J_mat, offset = gq.convert_to_penalty(A, b, var_type=gq.SPIN)
+        corr_h_mat = [-2, -2, -2, -2]
+        corr_J_mat = [[ 0,  1,  0,  0],
+                      [ 1,  0,  0,  0],
+                      [ 0,  0,  0,  1],
+                      [ 0,  0,  1,  0]]
+        corr_offset = 6.0
+        self.assertListEqual(h_mat.tolist(), corr_h_mat)
+        self.assertListEqual(J_mat.tolist(), corr_J_mat)
         self.assertEqual(offset, corr_offset)
 
     def test_dict_to_mat(self):
@@ -53,9 +65,9 @@ class TestCore(unittest.TestCase):
         qubo_mat = gq.dict_to_mat(qubo_dict, dims=(N, N))
 
         corr_qubo_mat = [[0.0, 1.0, 0.0, 0.0],
-                        [0.0, 0.0, 0.0, 0.0],
-                        [0.0, 0.0, 1.0, 0.0],
-                        [0.0, 0.0, 1.0, 0.0]]
+                         [0.0, 0.0, 0.0, 0.0],
+                         [0.0, 0.0, 1.0, 0.0],
+                         [0.0, 0.0, 1.0, 0.0]]
         self.assertListEqual(qubo_mat.tolist(), corr_qubo_mat)
 
     def test_const_to_coeff(self):
@@ -65,21 +77,32 @@ class TestCore(unittest.TestCase):
         F, C = gq.const_to_coeff(constraints, dims=(N, N))
 
         corr_F = [[1.0, 1.0, 0.0, 0.0],
-                 [0.0, 0.0, 1.0, 1.0],
-                 [1.0, 0.0, 1.0, 0.0],
-                 [0.0, 1.0, 0.0, 1.0]]
+                  [0.0, 0.0, 1.0, 1.0],
+                  [1.0, 0.0, 1.0, 0.0],
+                  [0.0, 1.0, 0.0, 1.0]]
         corr_C = [1.0, 1.0, 1.0, 1.0]
         self.assertListEqual(F.tolist(), corr_F)
         self.assertEqual(C.tolist(), corr_C)
 
     def test_mat_to_dimod_bqm(self):
-        qubo_mat = [[-1,  1,  0,  0],
-                    [ 1, -1,  0,  0],
-                    [ 0,  0, -1,  1],
-                    [ 0,  0,  1, -1]]
+        Q_mat = [[-1,  1,  0,  0],
+                 [ 1, -1,  0,  0],
+                 [ 0,  0, -1,  1],
+                 [ 0,  0,  1, -1]]
         offset = 2.0
-        bqm = gq.mat_to_dimod_bqm(qubo_mat, offset=offset)
-        corr_bqm = dimod.BinaryQuadraticModel.from_numpy_matrix(qubo_mat, offset=offset)
+        bqm = gq.mat_to_dimod_bqm(Q_mat=Q_mat, offset=offset, var_type=gq.BINARY)
+        corr_bqm = dimod.BinaryQuadraticModel.from_numpy_matrix(Q_mat, offset=offset)
+        self.assertEqual(bqm, corr_bqm)
+        
+        h_mat = [-2, -2, -2, -2]
+        J_mat = [[ 0, 1, 0, 0],
+                 [ 1, 0, 0, 0],
+                 [ 0, 0, 0, 1],
+                 [ 0, 0, 1, 0]]
+        J_dict = {(0, 1): 1, (1, 0): 1, (2, 3): 1, (3, 2): 1}
+        offset = 3.0
+        bqm = gq.mat_to_dimod_bqm(h_mat=h_mat, J_mat=J_mat, offset=offset, var_type=gq.SPIN)
+        corr_bqm = dimod.BinaryQuadraticModel.from_ising(h_mat, J_dict, offset=offset)
         self.assertEqual(bqm, corr_bqm)
 
 

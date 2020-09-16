@@ -2,6 +2,10 @@ import numpy as np
 import dimod
 
 
+BINARY = 'BINARY'
+SPIN = 'SPIN'
+
+
 class MultiIndex:
     """ Class for Multi-index """
     def __init__(self, dims):
@@ -30,23 +34,31 @@ def check_input_mat(mat):
     else:
         raise ValueError('The input matrix must be list or numpy.ndarray')
 
-    
-def convert_to_penalty(A, b):
+
+def convert_to_penalty(A, b, var_type=BINARY):
     """ Convert an equation constraint to the the penalty form
     A * x = b -> || A * x - b ||_2^2 = x.T * Q * x + c,
     where Q = A.T * A - 2 * diag(b.T * A), c = b.T * b
     """
-    
+
     _A = check_input_mat(A)
     _b = check_input_mat(b)
 
     if _A.shape[0] != _b.shape[0]:
         raise ValueError("can't dot A and b. ")
 
-    Q = _A.T @ _A - 2 * np.diag((_b.T @ _A).reshape(-1))
     c = float(np.dot(_b.T, _b))
-    return Q, c
-
+    if var_type == BINARY:
+        Q = _A.T @ _A - 2 * np.diag((_b.T @ _A).reshape(-1))
+        return Q, c
+    elif var_type == SPIN:
+        h = - 2 * (_b.T @ _A).reshape(-1)
+        J = _A.T @ _A
+        c += np.sum(np.diag(J))
+        J -= np.diag(np.diag(J))
+        return h, J, c
+    else:
+        raise ValueError("var_type must be 'BINARY' or 'SPIN'")
 
 def dict_to_mat(dict, dims):
     """ Convert a dict to a matrix """
@@ -77,14 +89,23 @@ def const_to_coeff(constraints, dims):
     return F, C
 
 
-def mat_to_dimod_bqm(qubo_mat, offset):
+def mat_to_dict(mat):
+    """ Return an iterator on indices of non-zero components"""
+    f = lambda x: x[0] if len(x) == 1 else x
+    return {f(k): mat[k] for k in zip(*np.argwhere(mat).T.tolist())}
+
+
+def mat_to_dimod_bqm(h_mat=None, J_mat=None, Q_mat=None, offset=0.0, var_type=BINARY):
     """ Convert QUBO matrix to Binary Quadratic Model of dimod library """
-
-    def index_nonzero(matrix):
-        """ Return an iterator on indices of non-zero components"""
-        return zip(*np.argwhere(matrix).T.tolist())
-
-    _qubo_mat = check_input_mat(qubo_mat)
-
-    qubo_dict = {k: _qubo_mat[k] for k in index_nonzero(_qubo_mat)}
-    return dimod.BinaryQuadraticModel.from_qubo(qubo_dict, offset)
+    if var_type == BINARY:
+        _Q_mat = check_input_mat(Q_mat)
+        Q_dict = mat_to_dict(_Q_mat)
+        return dimod.BinaryQuadraticModel.from_qubo(Q_dict, offset)
+    elif var_type == SPIN:
+        _h_mat = check_input_mat(h_mat)
+        _J_mat = check_input_mat(J_mat)
+        h_dict = mat_to_dict(_h_mat)
+        J_dict = mat_to_dict(_J_mat)
+        return dimod.BinaryQuadraticModel.from_ising(h_dict, J_dict, offset)
+    else:
+        raise ValueError("var_type must be 'BINARY' or 'SPIN'")
