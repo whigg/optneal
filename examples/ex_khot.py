@@ -23,9 +23,8 @@ def main():
     solver = dimod.ExactSolver()
     results = solver.sample(bqm)
 
-    mi = gq.MultiIndex(dims=N)
     for sample in results.lowest().samples():
-        print({mi.unravel(k): v for k, v in sample.items() if v == 1})
+        print({k: v for k, v in sample.items() if v == 1})
 
 
 if __name__ == '__main__':
