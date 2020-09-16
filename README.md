@@ -43,6 +43,6 @@ print(bqm)
 
 ### Result
 
-[Source code](examples/benchmark.py)
+TSP: [Source code](examples/benchmark.py)
 
 ![benchmark](https://github.com/mullzhang/genqubo/blob/master/examples/elapsed_time.png)
