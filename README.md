@@ -1,4 +1,4 @@
-# genqubo
+# GenQUBO
 
 ## install
 
@@ -33,6 +33,16 @@ bqm = gq.mat_to_dimod_bqm(Q_mat=qubo_mat, offset)
 print(bqm)
 ```
 
+### Typical problems
+
 - [K-hot Problem](examples/ex_khot.py)
 - [TSP](examples/ex_tsp.py)
 - [Number Partition Problem](examples/ex_num_part.py)
+
+## Benchmark
+
+### Result
+
+[Source code](examples/benchmark.py)
+
+![benchmark](https://github.com/mullzhang/genqubo/blob/master/examples/elapsed_time.png)
