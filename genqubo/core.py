@@ -8,8 +8,13 @@ SPIN = 'SPIN'
 
 class MultiIndex:
     """ Class for Multi-index """
+
     def __init__(self, dims):
-        self.dims = dims
+        if isinstance(dims, int):
+            self.dims = 1
+            self.ravel = lambda x: x
+        else:
+            self.dims = dims
 
     def ravel(self, multi_index):
         """ Convert multi-index to mono-index """
@@ -60,6 +65,7 @@ def convert_to_penalty(A, b, var_type=BINARY):
     else:
         raise ValueError("var_type must be 'BINARY' or 'SPIN'")
 
+
 def dict_to_mat(dict, dims):
     """ Convert a dict to a matrix """
     num_vars = np.prod(dims)
@@ -67,7 +73,11 @@ def dict_to_mat(dict, dims):
     multi_idx = MultiIndex(dims)
 
     for k, v in dict.items():
-        mat[multi_idx.ravel(k)] += v
+        multi_k = multi_idx.ravel(k)
+        if isinstance(multi_k, tuple):
+            mat[multi_k] += v
+        else:
+            mat[multi_k, multi_k] += v
 
     return mat
 
@@ -84,14 +94,21 @@ def const_to_coeff(constraints, dims):
     C = np.array([c for _, c in constraints])
     for i, (f, _) in enumerate(constraints):
         for k, v in f.items():
-            F[i, multi_idx.ravel(k)] += v
+            multi_k = multi_idx.ravel(k)
+            if isinstance(multi_k, tuple):
+                if multi_k[0] != multi_k[1]:
+                    raise ValueError('constraints must be linear')
+                else:
+                    F[i, multi_k[0]] += v
+            else:
+                F[i, multi_k] += v
 
     return F, C
 
 
 def mat_to_dict(mat):
     """ Return an iterator on indices of non-zero components"""
-    f = lambda x: x[0] if len(x) == 1 else x
+    def f(x): return x[0] if len(x) == 1 else x
     return {f(k): mat[k] for k in zip(*np.argwhere(mat).T.tolist())}
 
 
