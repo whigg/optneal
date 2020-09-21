@@ -11,7 +11,7 @@ def read_requirements():
 
 setup(
     name='genqubo',
-    version='0.0.1',
+    version='0.0.2',
     description='Generate QUBO matrix from constraints',
     long_description='README.md',
     author='Mull Zhang',
