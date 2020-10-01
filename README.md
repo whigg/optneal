@@ -1,13 +1,19 @@
-# GenQUBO
+# Optneal
 
 ## install
 
 ### install from github repository
 
 ```
-$ git clone git@github.com:mullzhang/genqubo
-$ cd genqubo
+$ git clone git@github.com:mullzhang/optneal
+$ cd optneal
 $ python setup.py install
+```
+
+### install with pip command
+
+```
+$ pip install git+https://github.com/mullzhang/optneal.git
 ```
 
 ## How to use
@@ -16,20 +22,20 @@ $ python setup.py install
 
 ```python
 import random
-import genqubo as gq
+import optneal as opn
 
 N = 10
 K = 2
-cost_dict = {i: random.gauss(0, 1) for i in range(N)}
-cost_mat = gq.dict_to_mat(cost_dict, dims=N)
+numbers = [random.uniform(0, 5) for _ in range(N)]
+cost_dict = {i: numbers[i] for i in range(N)}
+cost = opn.Cost(cost_dict, shape=N)
 
 constraints = [({i: 1 for i in range(N)}, K)]
-F, C = gq.const_to_coeff(constraints, dims=N)
-cstr_mat, offset = gq.convert_to_penalty(F, C)
+penalty = opn.Penalty(constraints, shape=N)
 
 lam = 5.0
-qubo_mat = cost_mat + lam * cstr_mat
-bqm = gq.mat_to_dimod_bqm(Q_mat=qubo_mat, offset)
+cost_func = cost + lam * penalty.normalize()
+bqm = cost_func.to_dimod_bqm()
 print(bqm)
 ```
 
@@ -45,4 +51,4 @@ print(bqm)
 
 TSP: [Source code](examples/benchmark.py)
 
-![benchmark](https://github.com/mullzhang/genqubo/blob/master/examples/elapsed_time.png)
+![benchmark](https://github.com/mullzhang/optneal/blob/master/examples/elapsed_time.png)
