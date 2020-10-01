@@ -1,30 +1,31 @@
 import random
 
 import dimod
-import genqubo as gq
+import optneal as opn
 
 
 def main():
     """ Example of K-hot problem """
-    N = 10
-    K = 2
-    cost_dict = {i: random.gauss(0, 1) for i in range(N)}
-    cost_mat = gq.dict_to_mat(cost_dict, dims=N)
+    N = 12
+    K = 10
+    numbers = [random.uniform(0, 5) for _ in range(N)]
+    print(sorted(numbers))
+
+    cost_dict = {i: numbers[i] for i in range(N)}
+    cost = opn.Cost(cost_dict, shape=N)
 
     constraints = [({i: 1 for i in range(N)}, K)]
-    F, C = gq.const_to_coeff(constraints, dims=N)
-    cstr_mat, offset = gq.convert_to_penalty(F, C)
+    penalty = opn.Penalty(constraints, shape=N)
 
     lam = 5.0
-    qubo_mat = cost_mat + lam * cstr_mat
-    bqm = gq.mat_to_dimod_bqm(Q_mat=qubo_mat, offset=offset)
-    print(bqm)
+    cost_func = cost + lam * penalty.normalize()
+    bqm = cost_func.to_dimod_bqm()
 
     solver = dimod.ExactSolver()
     results = solver.sample(bqm)
 
     for sample in results.lowest().samples():
-        print({k: v for k, v in sample.items() if v == 1})
+        print([numbers[k] for k, v in sample.items() if v == 1])
 
 
 if __name__ == '__main__':

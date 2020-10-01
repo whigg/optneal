@@ -10,13 +10,13 @@ def read_requirements():
 
 
 setup(
-    name='genqubo',
+    name='optneal',
     version='0.0.2',
     description='Generate QUBO matrix from constraints',
     long_description='README.md',
     author='Mull Zhang',
     install_requires=['dimod', 'numpy'],
-    url='https://github.com/mullzhang/genqubo',
+    url='https://github.com/mullzhang/optneal',
     license=license,
     packages=find_packages(exclude=('tests', 'docs')),
     test_suite='tests'

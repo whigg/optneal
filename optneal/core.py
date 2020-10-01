@@ -9,25 +9,25 @@ SPIN = 'SPIN'
 class MultiIndex:
     """ Class for Multi-index """
 
-    def __init__(self, dims):
-        if isinstance(dims, int):
-            self.dims = 1
+    def __init__(self, shape):
+        if isinstance(shape, int):
+            self.shape = 1
             self.ravel = lambda x: x
         else:
-            self.dims = dims
+            self.shape = shape
 
     def ravel(self, multi_index):
         """ Convert multi-index to mono-index """
         if isinstance(multi_index, int):
             return multi_index
         elif isinstance(multi_index[0], int):
-            return np.ravel_multi_index(multi_index, self.dims)
+            return np.ravel_multi_index(multi_index, self.shape)
         else:
-            return tuple([np.ravel_multi_index(mi, self.dims) for mi in multi_index])
+            return tuple([np.ravel_multi_index(mi, self.shape) for mi in multi_index])
 
     def unravel(self, index):
         """ Convert mono-index to multi-index """
-        multi_index = np.unravel_index(index, self.dims)
+        multi_index = np.unravel_index(index, self.shape)
         return multi_index[0] if len(multi_index) == 1 else multi_index
 
 
@@ -66,11 +66,11 @@ def convert_to_penalty(A, b, var_type=BINARY):
         raise ValueError("var_type must be 'BINARY' or 'SPIN'")
 
 
-def dict_to_mat(dict, dims):
+def dict_to_mat(dict, shape):
     """ Convert a dict to a matrix """
-    num_vars = np.prod(dims)
+    num_vars = np.prod(shape)
     mat = np.zeros((num_vars, num_vars))
-    multi_idx = MultiIndex(dims)
+    multi_idx = MultiIndex(shape)
 
     for k, v in dict.items():
         multi_k = multi_idx.ravel(k)
@@ -82,13 +82,13 @@ def dict_to_mat(dict, dims):
     return mat
 
 
-def const_to_coeff(constraints, dims):
+def const_to_coeff(constraints, shape):
     """ Convert constraints to coefficient matrix F and C
     F_{i, k} x_i ~ C_k for all k [~ represents ==, <=, or >=] -> F * x ~ C
     """
     num_cons = len(constraints)
-    num_vars = np.prod(dims)
-    multi_idx = MultiIndex(dims)
+    num_vars = np.prod(shape)
+    multi_idx = MultiIndex(shape)
 
     F = np.zeros((num_cons, num_vars))
     C = np.array([c for _, c in constraints])
@@ -106,9 +106,19 @@ def const_to_coeff(constraints, dims):
     return F, C
 
 
+def normalize(mat):
+    return mat / np.max(np.abs(mat))
+
+
+def digitilize(mat, grad_val):
+    mat_norm = normalize(mat)
+    return np.round(mat_norm * grad_val)
+
+
 def mat_to_dict(mat):
     """ Return an iterator on indices of non-zero components"""
-    def f(x): return x[0] if len(x) == 1 else x
+    def f(x):
+        return x[0] if len(x) == 1 else x
     return {f(k): mat[k] for k in zip(*np.argwhere(mat).T.tolist())}
 
 
