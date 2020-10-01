@@ -1,5 +1,11 @@
 # Optneal
 
+Optneal is a Python module for mathematical optimization using annealing and LP solvers.
+
+- Typical transformation of cost function and constraints to unconstrained form.
+- Generic optimization method or algorithm, such as penalty method or lagrange multiplier method.
+- Parameter tuning (*TBI)
+
 ## install
 
 ### install from github repository
@@ -47,7 +53,7 @@ print(bqm)
 
 ## Benchmark
 
-### Result
+### Generating model
 
 TSP: [Source code](examples/benchmark.py)
 
