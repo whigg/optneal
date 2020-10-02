@@ -57,4 +57,4 @@ print(bqm)
 
 TSP: [Source code](examples/benchmark.py)
 
-![benchmark](https://github.com/mullzhang/optneal/blob/master/examples/elapsed_time.png)
+![benchmark](https://github.com/mullzhang/optneal/blob/master/examples/elapsed_time_v2.png)

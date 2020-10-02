@@ -2,6 +2,7 @@ import random
 
 import dimod
 import optneal as opn
+from openjij import SASampler
 
 
 def main():
@@ -21,11 +22,15 @@ def main():
     cost_func = cost + lam * penalty.normalize()
     bqm = cost_func.to_dimod_bqm()
 
-    solver = dimod.ExactSolver()
-    results = solver.sample(bqm)
+    sa_sampler = SASampler()
+    lagrex_sampler = opt.LagrangeRelaxSampler(sa_sampler)
+    sampleset = lagrex_sampler.sample(bqm, num_reads=10)
 
-    for sample in results.lowest().samples():
-        print([numbers[k] for k, v in sample.items() if v == 1])
+    # solver = dimod.ExactSolver()
+    # results = solver.sample(bqm)
+
+    # for sample in results.lowest().samples():
+        # print([numbers[k] for k, v in sample.items() if v == 1])
 
 
 if __name__ == '__main__':
