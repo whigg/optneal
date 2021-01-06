@@ -60,6 +60,11 @@ class Express:
     def to_dimod_bqm(self):
         return mat_to_dimod_bqm(Q_mat=self.mat, offset=self.offset)
 
+    def to_qubo(self):
+        mat = np.triu(self.mat) + np.tril(self.mat).T - np.diag(np.diag(self.mat))
+        Q_dict = {(int(i), int(j)): mat[i, j] for i, j in np.argwhere(mat != 0).astype(int)}
+        return Q_dict, self.offset
+
 
 class Cost(Express):
     def __init__(self, Q, shape):
