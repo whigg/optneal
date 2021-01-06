@@ -11,7 +11,7 @@ def read_requirements():
 
 setup(
     name='optneal',
-    version='0.0.3',
+    version='0.0.4',
     description='Generate QUBO matrix from constraints',
     long_description='README.md',
     author='Mull Zhang',
