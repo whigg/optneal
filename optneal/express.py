@@ -58,7 +58,8 @@ class Express:
             return Express(_mat, _offset)
 
     def to_dimod_bqm(self):
-        return mat_to_dimod_bqm(Q_mat=self.mat, offset=self.offset)
+        Q_dict, offset = self.to_qubo()
+        return dimod.BinaryQuadraticModel.from_qubo(Q_dict, offset)
 
     def to_qubo(self):
         mat = np.triu(self.mat) + np.tril(self.mat).T - np.diag(np.diag(self.mat))
