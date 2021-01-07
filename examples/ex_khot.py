@@ -23,6 +23,8 @@ def main():
     # bqm = cost_func.to_dimod_bqm()
     Q, _ = cost_func.to_qubo()
 
+    cost_func.show_qubo()
+
     sa_sampler = SASampler()
     # lagrex_sampler = opn.LagrangeRelaxSampler(sa_sampler)
     # sampleset = lagrex_sampler.sample(bqm, num_reads=10)

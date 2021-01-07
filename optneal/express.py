@@ -1,6 +1,7 @@
 import numbers
 
 import numpy as np
+import matplotlib.pyplot as plt
 import dimod
 
 from .core import dict_to_mat, const_to_coeff, convert_to_penalty, mat_to_dimod_bqm
@@ -65,6 +66,15 @@ class Express:
         mat = np.triu(self.mat) + np.tril(self.mat).T - np.diag(np.diag(self.mat))
         Q_dict = {(int(i), int(j)): mat[i, j] for i, j in np.argwhere(mat != 0).astype(int)}
         return Q_dict, self.offset
+
+    def show_qubo(self, save=False, fname='qubo.png'):
+        mat = np.triu(self.mat) + np.tril(self.mat).T - np.diag(np.diag(self.mat))
+        plt.imshow(mat)
+        plt.colorbar()
+        plt.tight_layout()
+        if save:
+            plt.savefig(fname)
+        plt.show()
 
 
 class Cost(Express):
