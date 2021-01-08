@@ -12,7 +12,7 @@ class Express:
         self.mat = mat
         self.offset = offset
 
-    @staticmethod
+    @property
     def shape(self):
         return self.mat.shape
 
