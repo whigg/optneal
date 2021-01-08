@@ -110,7 +110,7 @@ def normalize(mat):
     return mat / np.max(np.abs(mat))
 
 
-def digitilize(mat, grad_val):
+def digitalize(mat, grad_val):
     mat_norm = normalize(mat)
     return np.round(mat_norm * grad_val)
 
