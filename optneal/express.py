@@ -4,12 +4,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import dimod
 
-from .core import dict_to_mat, const_to_coeff, convert_to_penalty, mat_to_dimod_bqm
+from .core import dict_to_mat, const_to_coeff, convert_to_penalty
 
 
 class Express:
     def __init__(self, mat, offset=0.0):
-        self.mat = mat
+        self.mat = np.triu(mat) + np.tril(mat).T - np.diag(np.diag(mat))
         self.offset = offset
 
     @property
@@ -63,13 +63,14 @@ class Express:
         return dimod.BinaryQuadraticModel.from_qubo(Q_dict, offset)
 
     def to_qubo(self):
-        mat = np.triu(self.mat) + np.tril(self.mat).T - np.diag(np.diag(self.mat))
-        Q_dict = {(int(i), int(j)): mat[i, j] for i, j in np.argwhere(mat != 0).astype(int)}
+        Q_dict = {
+            (int(i), int(j)): self.mat[i, j]
+            for i, j in np.argwhere(self.mat != 0).astype(int)
+        }
         return Q_dict, self.offset
 
     def show_qubo(self, save=False, fname='qubo.png'):
-        mat = np.triu(self.mat) + np.tril(self.mat).T - np.diag(np.diag(self.mat))
-        plt.imshow(mat)
+        plt.imshow(self.mat)
         plt.colorbar()
         plt.tight_layout()
         if save:
