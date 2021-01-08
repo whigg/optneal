@@ -16,6 +16,10 @@ class Express:
     def shape(self):
         return self.mat.shape
 
+    @property
+    def max_coef_ratio(self):
+        return np.max(np.abs(self.mat))
+
     def __add__(self, other):
         if isinstance(other, Express):
             if self.shape != other.shape:
