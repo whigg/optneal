@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import dimod
 
-from .core import dict_to_mat, const_to_coeff, convert_to_penalty
+from .core import dict_to_mat, const_to_coeff, convert_to_penalty, digitalize
 
 
 class Express:
@@ -62,6 +62,9 @@ class Express:
         else:
             return Express(_mat, _offset)
 
+    def digitalize(self, grad_val):
+        return digitalize(self.mat, grad_val)
+
     def to_dimod_bqm(self):
         Q_dict, offset = self.to_qubo()
         return dimod.BinaryQuadraticModel.from_qubo(Q_dict, offset)
@@ -80,6 +83,10 @@ class Express:
         if save:
             plt.savefig(fname)
         plt.show()
+
+    def energy(self, sample):
+        _sample = np.array(sample)
+        return _sample.T @ self.mat @ _sample + self.offset
 
 
 class Cost(Express):
